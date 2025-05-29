@@ -1,0 +1,157 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - NoteTrail{% endblock %}
+
+{% block content %}
+<header class="header">
+    <h1>Good {{ 'morning' if hour < 12 else 'afternoon' if hour < 18 else 'evening' }}, {{ current_user.display_name or current_user.username }}!</h1>
+    <p>Ready to continue your writing journey? You're doing great!</p>
+</header>
+
+<div class="content">
+    <!-- Stats Grid -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-label">Words Today</div>
+            <div class="stat-value">{{ user_stats.words_today or 0 }}</div>
+            <div class="stat-trend">Goal: {{ current_user.daily_goal }} words</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Current Streak</div>
+            <div class="stat-value">{{ user_stats.current_streak or 0 }}</div>
+            <div class="stat-trend">days</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Active Projects</div>
+            <div class="stat-value">{{ project_stats.active }}</div>
+            <div class="stat-trend">projects</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Total Words</div>
+            <div class="stat-value">{{ user_stats.total_words or 0 }}</div>
+            <div class="stat-trend">lifetime</div>
+        </div>
+    </div>
+    
+    <!-- Recent Projects Section -->
+    <div class="card mb-8">
+        <div class="card-header">
+            <div class="flex justify-between items-center">
+                <h2 class="card-title">Recent Projects</h2>
+                <a href="{{ url_for('create_project') }}" class="btn btn-primary">New Project</a>
+            </div>
+        </div>
+        <div class="card-content">
+            {% if projects %}
+                <div class="grid gap-4">
+                    {% for project in projects[:3] %}
+                    <div class="card">
+                        <div class="card-content">
+                            <div class="flex justify-between items-start mb-4">
+                                <div>
+                                    <h3 class="font-semibold text-lg mb-2">{{ project.title }}</h3>
+                                    <p class="text-muted-foreground mb-2">{{ project.description or "No description" }}</p>
+                                    <div class="flex gap-2">
+                                        <span class="text-sm px-2 py-1 bg-secondary rounded">{{ project.status.replace('_', ' ').title() }}</span>
+                                        <span class="text-sm text-muted-foreground">{{ project.word_count }} / {{ project.word_goal }} words</span>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <div class="text-sm text-muted-foreground mb-2">
+                                        Updated {{ project.updated_at.strftime('%b %d') }}
+                                    </div>
+                                    <div class="flex gap-2">
+                                        <a href="{{ url_for('project_detail', id=project.id) }}" class="btn btn-sm btn-outline">View</a>
+                                        <a href="{{ url_for('workspace', project_id=project.id) }}" class="btn btn-sm btn-primary">Write</a>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Progress bar -->
+                            <div class="w-full bg-secondary rounded-full h-2">
+                                <div class="bg-primary h-2 rounded-full" style="width: {{ (project.word_count / project.word_goal * 100) if project.word_goal > 0 else 0 }}%"></div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                
+                {% if projects|length > 3 %}
+                <div class="text-center mt-6">
+                    <a href="{{ url_for('projects') }}" class="btn btn-outline">View All Projects</a>
+                </div>
+                {% endif %}
+            {% else %}
+                <div class="empty-state">
+                    <div class="empty-icon">📝</div>
+                    <h3 class="empty-title">No projects yet</h3>
+                    <p class="empty-text">Create your first writing project to get started on your writing journey.</p>
+                    <a href="{{ url_for('create_project') }}" class="btn btn-primary">Create Your First Project</a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Quick Write Section -->
+    <div class="card mb-8">
+        <div class="card-header">
+            <h2 class="card-title">Quick Write</h2>
+        </div>
+        <div class="card-content">
+            <form method="POST" action="{{ url_for('quick_write') }}">
+                <div class="form-group">
+                    <label for="content" class="form-label">Start writing or jot down ideas</label>
+                    <textarea id="content" name="content" class="form-textarea" 
+                              placeholder="What's on your mind? Start a new story, share writing tips, or ask for feedback..."></textarea>
+                </div>
+                <div class="flex justify-between items-center">
+                    <div class="flex items-center gap-2 text-sm text-muted-foreground">
+                        <span>👍</span>
+                        <span>Share with community</span>
+                    </div>
+                    <div class="flex gap-2">
+                        <button type="submit" name="action" value="draft" class="btn btn-outline btn-sm">Save Draft</button>
+                        <button type="submit" name="action" value="post" class="btn btn-primary btn-sm">Post</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Community Activity Section -->
+    <div class="card">
+        <div class="card-header">
+            <div class="flex justify-between items-center">
+                <h2 class="card-title">Community Activity</h2>
+                <a href="{{ url_for('community') }}" class="btn btn-outline">View All Posts</a>
+            </div>
+        </div>
+        <div class="card-content">
+            {% if community_posts %}
+                <div class="space-y-4">
+                    {% for post in community_posts[:3] %}
+                    <div class="border-l-4 border-primary pl-4">
+                        <div class="flex items-center gap-2 mb-2">
+                            <div class="user-avatar" style="width: 24px; height: 24px; font-size: 12px;">
+                                {{ post.author.display_name[0].upper() if post.author.display_name else post.author.username[0].upper() }}
+                            </div>
+                            <span class="font-medium">{{ post.author.display_name or post.author.username }}</span>
+                            <span class="text-sm text-muted-foreground">{{ post.created_at.strftime('%b %d') }}</span>
+                        </div>
+                        <p class="text-sm">{{ post.content[:120] }}{% if post.content|length > 120 %}...{% endif %}</p>
+                        <div class="flex gap-4 mt-2 text-sm text-muted-foreground">
+                            <span>👍 {{ post.likes_count }}</span>
+                            <span>💬 {{ post.comments_count }}</span>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="text-center py-8">
+                    <p class="text-muted-foreground">No recent community activity.</p>
+                    <a href="{{ url_for('community') }}" class="btn btn-outline mt-4">Explore Community</a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

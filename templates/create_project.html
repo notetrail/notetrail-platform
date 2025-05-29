@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block title %}Create Project - NoteTrail{% endblock %}
+
+{% block content %}
+<header class="header">
+    <h1>Create New Project</h1>
+    <p>Start your next writing adventure</p>
+</header>
+
+<div class="content">
+    <div class="card" style="max-width: 600px; margin: 0 auto;">
+        <div class="card-content">
+            <form method="POST" action="{{ url_for('create_project') }}">
+                <div class="form-group">
+                    <label for="title" class="form-label">Project Title *</label>
+                    <input type="text" id="title" name="title" class="form-input" required 
+                           placeholder="Enter your project title" value="{{ request.form.title if request.form.title }}">
+                </div>
+                
+                <div class="form-group">
+                    <label for="description" class="form-label">Description</label>
+                    <textarea id="description" name="description" class="form-textarea" 
+                              placeholder="Describe your project...">{{ request.form.description if request.form.description }}</textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="word_goal" class="form-label">Word Count Goal</label>
+                    <input type="number" id="word_goal" name="word_goal" class="form-input" 
+                           value="{{ request.form.word_goal or 50000 }}" min="100" placeholder="50000">
+                    <small class="text-muted-foreground">Set a target word count for your project</small>
+                </div>
+                
+                <div class="form-group">
+                    <label for="status" class="form-label">Status</label>
+                    <select id="status" name="status" class="form-input">
+                        <option value="draft" {{ 'selected' if request.form.status == 'draft' }}>Draft</option>
+                        <option value="in_progress" {{ 'selected' if request.form.status == 'in_progress' }}>In Progress</option>
+                        <option value="completed" {{ 'selected' if request.form.status == 'completed' }}>Completed</option>
+                    </select>
+                </div>
+                
+                <div class="flex gap-4 mt-8">
+                    <button type="submit" class="btn btn-primary flex-1">Create Project</button>
+                    <a href="{{ url_for('projects') }}" class="btn btn-outline">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

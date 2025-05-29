@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}NoteTrail - Writers Hub{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/favicon.png') }}">
+</head>
+<body>
+    {% block body %}
+    <div class="app">
+        {% if current_user.is_authenticated %}
+        <!-- Sidebar Navigation -->
+        <nav class="sidebar">
+            <div class="logo">
+                <h1><span class="brand">Writers</span> Hub</h1>
+            </div>
+            
+            <div class="nav-menu">
+                <a href="{{ url_for('dashboard') }}" class="nav-item {{ 'active' if request.endpoint == 'dashboard' }}">
+                    <div class="nav-icon">📊</div>
+                    Dashboard
+                </a>
+                <a href="{{ url_for('projects') }}" class="nav-item {{ 'active' if request.endpoint == 'projects' }}">
+                    <div class="nav-icon">📝</div>
+                    My Projects
+                </a>
+                <a href="{{ url_for('community') }}" class="nav-item {{ 'active' if request.endpoint == 'community' }}">
+                    <div class="nav-icon">👥</div>
+                    Community
+                </a>
+                <a href="{{ url_for('resources') }}" class="nav-item {{ 'active' if request.endpoint == 'resources' }}">
+                    <div class="nav-icon">📚</div>
+                    Resources
+                </a>
+                <a href="{{ url_for('workspace') }}" class="nav-item {{ 'active' if request.endpoint == 'workspace' }}">
+                    <div class="nav-icon">✍️</div>
+                    Writing Workspace
+                </a>
+            </div>
+            
+            <div class="user-section">
+                <div class="user-info">
+                    <div class="user-avatar">{{ current_user.display_name[0].upper() if current_user.display_name else current_user.email[0].upper() }}</div>
+                    <div class="user-details">
+                        <div class="user-name">{{ current_user.display_name or current_user.username }} (@{{ current_user.username }})</div>
+                        <div class="user-email">{{ current_user.email }}</div>
+                    </div>
+                </div>
+            </div>
+        </nav>
+        
+        <!-- Main Content -->
+        <main class="main-content">
+            {% block content %}{% endblock %}
+        </main>
+        {% else %}
+        <!-- Full width content for non-authenticated pages -->
+        {% block content %}{% endblock %}
+        {% endif %}
+    </div>
+    {% endblock %}
+    
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="flash-messages">
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ 'error' if category == 'error' else 'success' if category == 'success' else 'info' }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+    
+    {% block scripts %}{% endblock %}
+</body>
+</html>
