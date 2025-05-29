@@ -39,9 +39,15 @@ def login():
     if request.method == "POST":
         email = request.form["email"]
         password = request.form["password"]
-        user = supabase.auth.sign_in_with_password({"email": email, "password": password})
-        session["user"] = user.user.id
-        return redirect("/dashboard")
+        try:
+            user = supabase.auth.sign_in_with_password({"email": email, "password": password})
+            if user.user:
+                session["user"] = user.user.id
+                return redirect("/dashboard")
+            else:
+                return "<h3>Login failed. Please try again.</h3>"
+        except Exception as e:
+            return f"<h3>Error: {str(e)}</h3>"
     return """
     <h2>Log In</h2>
     <form method="post">
